@@ -43,8 +43,7 @@ The output you'd get would look something like this:
 
 ## Design
 
-Simpleton is built on three basic ideas: *Middleware*, *Command Runners*,
-and *Workers*.
+Simpleton is built around *Middleware* and *Workers*.
 
 ### Middleware
 
@@ -56,7 +55,7 @@ For example, when the command from this middleware:
 
     Proc.new { %Q[echo "The time on the server is `date`"] }
 
-is run, it will echo the current time on a remote host, and:
+is run, it will echo the current time on a remote host, and when:
 
     class Something
       def self.call(configuration)
@@ -64,29 +63,16 @@ is run, it will echo the current time on a remote host, and:
       end
     end
 
-will lookup the commit-id of the commit to deploy on a remote host.
-
-### Command Runners
-
-A Command Runner is an object that responds to `run`, taking two string arguments:
-a location to run the command at, and the command to be run. The location is in
-the standard SSH `[user@]hostname` format, so it can be just a host to run the
-command and optionally include a specific user to run the command as.
-
-The default Command Runner is `Simpleton::CommandRunners::Open3`, which displays
-each command that it runs, along with the results of its standard output and
-standard error streams.
-
-If you prefer another way of running commands on a remote host, check out the
-other Command Runner that ship with Simpleton (System), write your own.
-It's simple!
+is run, it will lookup the commit-id of the commit to deploy on a remote host.
 
 ### Workers
 
 Workers are objects that perform the work for a single host in the
-configuration. Given an array of Middleware objects and a Command Runner
-each `Simpleton::Worker` constructs a list of commands by calling the Middleware
-objects and then runs the list of constructed commands through the Command Runner.
+configuration. Each `Simpleton::Worker` constructs a list of commands to run
+on its host by calling the Middleware objects in its queue; it then runs
+each constructed command, capturing its stdout, stderr and exit status. If any
+command fails (returns a non-zero status), the Worker will not run any further
+commands and will exit with the failed command's status
 
 Each worker runs in its own process, forked by the Simpleton framework, so it
 is isolated from problems that may arise while running commands on the other
@@ -94,7 +80,8 @@ hosts.
 
 ## Dependencies
 
-* Runtime: `none`
+* Runtime:
+  * `session`
 * Development
   * `riot`
   * `rr`
