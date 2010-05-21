@@ -49,7 +49,7 @@ context "Simpleton::Worker#run" do
     status = Time.now.to_i
     stub.instance_of(Session::Sh).exit_status { status }
 
-    mock(Process).exit(status).any_number_of_times { true }
+    mock(Process).exit(status).at_least(1) { true }
 
     topic.run
   end
