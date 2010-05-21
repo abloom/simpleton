@@ -15,30 +15,43 @@ module Simpleton
       shell = Session.new
 
       commands.each do |command|
-        log_command(command)
-        stdout, stderr = execute(shell, location, command)
-        log_output(stdout, stderr)
+        log_execution(command)
 
-        Process.exit(shell.exit_status) unless shell.exit_status.zero?
+        stdout, stderr = execute(shell, location, command)
+        process_results(stdout, stderr)
+
+        exit_if_failed(shell.exit_status)
       end
     end
 
   private
+    def log_execution(command)
+      puts formatted_line(location, "<", command)
+    end
+
     def execute(session, location, command)
       session.execute("ssh #{location} '#{command}'", :stdin => StringIO.new)
     end
 
-    def log_command(command)
-      puts formatted_line(location, "<", command)
+    def process_results(stdout_string, stderr_string)
+      stdout_string.split("\n").each { |line| log_output_line(line) }
+      stderr_string.split("\n").each { |line| log_error_line(line) }
     end
 
-    def log_output(stdout, stderr)
+    def log_output_line(stdout)
       puts formatted_line(location, ">", stdout) unless stdout.empty?
-      puts formatted_line(location, "E", stderr) unless stderr.empty?
+    end
+
+    def log_error_line(stderr)
+      puts formatted_line("\e[31m#{location}\e[0m", "E", stderr) unless stderr.empty?
     end
 
     def formatted_line(prefix, indicator, message)
       "[#{prefix}]#{indicator} #{message}"
+    end
+
+    def exit_if_failed(exit_status)
+      Process.exit(exit_status) unless exit_status.zero?
     end
   end
 end
