@@ -39,7 +39,7 @@ module Simpleton
     end
 
     def log_output_line(stdout)
-      puts formatted_line(location, ">", stdout) unless stdout.empty?
+      puts formatted_line("\e[32m#{location}\e[0m", ">", stdout) unless stdout.empty?
     end
 
     def log_error_line(stderr)
