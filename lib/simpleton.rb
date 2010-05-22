@@ -15,6 +15,7 @@ module Simpleton
 
   def self.run(*args)
     master.run(*args)
+    master.middleware_queues.clear
   end
 
   def self.master
