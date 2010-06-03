@@ -72,12 +72,13 @@ context "Simpleton::Master#run" do
 
   should "fork a new process for each configured location" do
     mock(@master).fork.times(@master.middleware_queues.keys.length) {true}
-  
+
     @master.run
   end
-  
+
   should "construct a Worker for each location with the appropriate middleware chain" do
     stub(@master).fork { |block| block.call }
+    stub(Kernel).exit!(0)
     @master.middleware_queues.each do |location, chain|
       mock(Simpleton::Worker).new(location, chain, anything) { mock!.run }
     end
@@ -87,6 +88,7 @@ context "Simpleton::Master#run" do
 
   should "run each constructed Worker" do
     stub(@master).fork { |block| block.call }
+    stub(Kernel).exit!(0)
     @master.middleware_queues.each do |location, chain|
       stub(Simpleton::Worker).new { mock!.run }
     end
