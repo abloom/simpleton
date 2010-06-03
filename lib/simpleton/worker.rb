@@ -51,7 +51,7 @@ module Simpleton
     end
 
     def exit_if_failed(exit_status)
-      Process.exit(exit_status) unless exit_status.zero?
+      Kernel.exit!(exit_status) unless exit_status.zero?
     end
   end
 end
